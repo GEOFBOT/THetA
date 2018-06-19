@@ -325,7 +325,7 @@ def run_fixed_N(n, args, intervals, resultsfile=None):
         intervals, missingData, corrRatio, meanBAFs, tumorData, normalData, tumorBAF, normalBAF, chrmsToUse, intervalData = get_clustering_args(tumorfile, normalfile, filename, num_processes, m, tumorCounts, normCounts)
 
         #original clustering code
-        lengths, tumorCounts, normalCounts, m, upper_bounds, lower_bounds, clusterAssignments, numClusters, clusterMeans, normalInd = clustering_BAF(n, intervals=intervals, missingData=missingData, prefix=prefix, outdir=directory, numProcesses=num_processes)
+        lengths, tumorCounts, normalCounts, m, upper_bounds, lower_bounds, clusterAssignments, numClusters, clusterMeans, normalInd = clustering_BAF(n, intervals=intervals, missingData=missingData, prefix=prefix, outdir=directory, numProcesses=num_processes, generateData=False)
 
         origM, origLengths, origTumor, origNormal, origUpper, origLower = (m, lengths, tumorCounts, normCounts, upper_bounds, lower_bounds)
 
