@@ -110,7 +110,8 @@ def clustering_BAF(n, intervals=None, missingData=None, filename=None, byChrm=Tr
 
 	plot_classifications(metaMu, metaSigma, intervals, clusterAssignments, numClusters, sampleName, singleCopyParamInds, zeroCopyParamInds, ampParamInds, diploidInd, outdir)
 
-	lengths, tumorCounts, normalCounts, upper_bounds, lower_bounds, clusterAssignments, m = process_classifications(intervals, missingData, metaMu, clusterAssignments, numClusters, diploidInd, clonalsingleCopyParamInd, singleCopyParamInds, ampParamInds, sampleName, outdir)
+	lengths, tumorCounts, normalCounts, upper_bounds, lower_bounds, clusterAssignments, m, plot_params = process_classifications(intervals, missingData, metaMu, clusterAssignments, numClusters, diploidInd, clonalsingleCopyParamInd, singleCopyParamInds, ampParamInds, sampleName, outdir)
+	plot_params = (intervals,) + plot_params
 
 	#Layla 9-15-15 -- Commenting out this section fixes the crash problem...need to investigate further
 	try:
@@ -118,7 +119,7 @@ def clustering_BAF(n, intervals=None, missingData=None, filename=None, byChrm=Tr
 	except OSError:
 		print "WARNING: Was unable to remove bnpy output. This can be manually removed after THetA has completed. bnpy output has been stored in " + bnpyoutdir
 
-	return lengths, tumorCounts, normalCounts, m, upper_bounds, lower_bounds, clusterAssignments, numClusters, metaMu, diploidInd
+	return lengths, tumorCounts, normalCounts, m, upper_bounds, lower_bounds, clusterAssignments, numClusters, metaMu, diploidInd, plot_params
 
 def generate_meta_data(intervals, byChrm, numProcesses, sampleName, generateData, outdir):
 	"""
@@ -625,8 +626,9 @@ def process_classifications(intervals, missingData, metaMu, clusterAssignments, 
 			j += 1
 
 	plot_clusters(intervals, clusterAssignments, numClusters, sampleName, amp_upper, stepSize, diploidRDR, clonalsingleCopyRDR, outdir)
+	plot_params = (sampleName, amp_upper, stepSize, diploidRDR, clonalsingleCopyRDR, outdir)
 
-	return lengths, tumorCounts, normalCounts, upper_bounds, lower_bounds, fullClusterAssignments, m
+	return lengths, tumorCounts, normalCounts, upper_bounds, lower_bounds, fullClusterAssignments, m, plot_params
 
 
 def group_to_meta_interval(lengths, tumorCounts, normalCounts, m, upper_bounds, lower_bounds, clusterAssignments, numClusters):
@@ -696,7 +698,7 @@ def write_clusters_for_all_samples(samplelist):
 	for sample in samplelist:
 		filename = "/research/compbio/projects/THetA/ICGC-PanCan/processed_data/pilot64/" + sample + "/" + sample + ".gamma.0.2.RD.BAF.intervals.txt"
 		try:
-			lengths, tumorCounts, normalCounts, m, upper_bounds, lower_bounds, clusterAssignments, numClusters, clusterMeans, diploidInd = clustering_BAF(filename)
+			lengths, tumorCounts, normalCounts, m, upper_bounds, lower_bounds, clusterAssignments, numClusters, clusterMeans, diploidInd, _ = clustering_BAF(filename)
 			singleCopyParamInds, zeroCopyParamInds, ampParamInds, diploidInd = classify_clusters(clusterMeans, lengths, clusterAssignments)
 			intervalMap, metaLengths, metaTumorCounts, metaNormalCounts, meta_lower_bounds, meta_upper_bounds = group_to_meta_interval(lengths, tumorCounts, normalCounts, m, upper_bounds, lower_bounds, clusterAssignments, numClusters)
 			f.write(sample + "\n")

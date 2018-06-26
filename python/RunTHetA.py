@@ -318,6 +318,8 @@ def run_fixed_N(n, args, intervals, resultsfile=None):
 
     doClustering = tumorfile is not None and normalfile is not None and not noClustering
 
+    plot_params = ()
+
     ###
     # Setup if we will do clustering of intervals prior to running
     ###
@@ -325,7 +327,7 @@ def run_fixed_N(n, args, intervals, resultsfile=None):
         intervals, missingData, corrRatio, meanBAFs, tumorData, normalData, tumorBAF, normalBAF, chrmsToUse, intervalData = get_clustering_args(tumorfile, normalfile, filename, num_processes, m, tumorCounts, normCounts)
 
         #original clustering code
-        lengths, tumorCounts, normalCounts, m, upper_bounds, lower_bounds, clusterAssignments, numClusters, clusterMeans, normalInd = clustering_BAF(n, intervals=intervals, missingData=missingData, prefix=prefix, outdir=directory, numProcesses=num_processes)
+        lengths, tumorCounts, normalCounts, m, upper_bounds, lower_bounds, clusterAssignments, numClusters, clusterMeans, normalInd, plot_params = clustering_BAF(n, intervals=intervals, missingData=missingData, prefix=prefix, outdir=directory, numProcesses=num_processes)
 
         origM, origLengths, origTumor, origNormal, origUpper, origLower = (m, lengths, tumorCounts, normCounts, upper_bounds, lower_bounds)
 
@@ -503,6 +505,16 @@ def run_fixed_N(n, args, intervals, resultsfile=None):
     print "Plotting results as a " + graph_format + "..."
     #plot_results(directory, filename, prefix, n)
     plot_results(directory, filename, prefix, read_depth_file, n, graph_format)
+
+    if doClustering and n == 2: # plot clusters with inferred copy numbers
+        if prefix is None:
+            sampleName = os.path.basename(filename).split(".")[0]
+            prefix = sampleName
+        else:
+            sampleName = prefix
+
+        from ClusterPlottingTools import plot_clusters_copy_numbers
+        plot_clusters_copy_numbers(plot_params[0], best, *plot_params[1:])
 
     if n == 2: write_out_N3_script(directory, prefix, filename)
 
