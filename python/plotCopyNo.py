@@ -61,7 +61,7 @@ def plot_copy_no(tumor_snp, normal_snp, result_file, interval_file):
     ax.scatter(ifile['ratio'], ifile['meanBAFs'], c=ifile['color'])
     ifile[['ratio', 'meanBAFs', 'C']].apply(lambda (x,y,c): ax.annotate(str(int(c)), xy=(x,y)), axis=1)
 
-    fig.savefig(os.path.basename(result_file) + "_assignment_copyNo.png")
+    fig.savefig(result_file.split('.')[0] + "_assignment_copyNo.png")
 
 if __name__ == '__main__':
     plot_copy_no(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
