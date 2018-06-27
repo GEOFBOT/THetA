@@ -141,43 +141,6 @@ def plot_clusters(intervals, clusterAssignments, numClusters, sampleName, amp_up
 	ax.set_xlim([0, ((maxStep * stepSize) + diploidRDR)])
 	fig.savefig(os.path.join(outdir, sampleName + "_assignment.png"))
 
-def plot_clusters_copy_numbers(intervals, results, sampleName, amp_upper, stepSize, diploidRDR, clonalsingleCopyRDR, outdir):
-	print "Plotting clusters with copy numbers..."
-	cmap = plt.get_cmap('gist_rainbow')
-
-	print(intervals)
-	print(results)
-
-	best_result = results[0]
-	C, mu, L, vals = best_result # assumes n=2 I think
-	maxCopy = np.max(C)
-	colors = [cmap(i) for i in np.linspace(0, 1, maxCopy+1)]
-
-	fig = plt.figure()
-	ax = fig.add_subplot(111)
-	xs = map(lambda row: row[5], intervals)
-	ys = map(lambda row: row[6], intervals)
-	copyNoAssignments = np.reshape(C[:,1], (C.shape[0],))
-	colorAssignment = map(lambda assignment: colors[int(assignment)], copyNoAssignments)
-
-	ax.scatter(xs, ys, c=colorAssignment)
-	ax.plot([clonalsingleCopyRDR, clonalsingleCopyRDR], [0.0, 0.5], color='red')
-	ax.plot([diploidRDR, diploidRDR], [0.0, 0.5], color='green')
-	if amp_upper != []:
-		maxStep = int(max(amp_upper) - 1)
-	else:
-		maxStep = 1
-	for scale in range(1, maxStep):
-		barX = (scale * stepSize) + diploidRDR
-		ax.plot([barX, barX], [0.0, 0.5], color='blue')
-	ax.set_ylim([0, 0.5])
-	ax.set_xlim([0, ((maxStep * stepSize) + diploidRDR)])
-
-	for i, coord in enumerate(zip(xs,ys)):
-		ax.annotate(str(int(copyNoAssignments[i])), xy=coord)
-
-	fig.savefig(os.path.join(outdir, sampleName + "_assignment_copyNo.png"))
-
 def parse_preprocessed_data(filename):
 	sampleList = []
 	numClustersList = []
