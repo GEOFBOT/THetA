@@ -36,7 +36,7 @@ def plot_snp(tumor_snp, normal_snp, interval_file):
     fig = plt.figure(figsize=(10, 3))
     ax = fig.add_subplot(111)
 
-    ax.scatter(snps['abs_pos'], snps['baf'], s=.5)
+    ax.scatter(snps['abs_pos'], snps['baf'], s=.5, clip_on=False)
 
     chm_len_cum = [x + sum(HG19_CHM_LEN[1:i]) for i, x in enumerate(HG19_CHM_LEN)]
     ax.set_xticks(chm_len_cum)
