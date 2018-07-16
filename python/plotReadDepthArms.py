@@ -29,49 +29,52 @@ def get_abs_pos(chrm, rel_pos):
     """Get absolute coor. from relative coor."""
     return rel_pos + sum(HG19_CHM_LEN[1:chrm])
 
-file = sys.argv[1]
+def get_read_depth_arms(file):
+    bins = pd.read_table(file)
+    bins['Arm'] = bins.apply(lambda r: 'p' if r['Start'] < HG19_CENTROMERE[r['Chrm']] else 'q', axis=1)
 
-bins = pd.read_table(file)
-bins['Arm'] = bins.apply(lambda r: 'p' if r['Start'] < HG19_CENTROMERE[r['Chrm']] else 'q', axis=1)
+    bins['Abs_Start'] = bins[['Chrm', 'Start']].apply(lambda (c,s): s + sum(HG19_CHM_LEN[1:c]), axis=1)
+    bins = bins.groupby(['Chrm', 'Arm']).agg({'Abs_Start': 'min', 'numTumor': 'sum', 'numNormal': 'sum'}).reset_index()
 
-bins['Abs_Start'] = bins[['Chrm', 'Start']].apply(lambda (c,s): s + sum(HG19_CHM_LEN[1:c]), axis=1)
-bins = bins.groupby(['Chrm', 'Arm']).agg({'Abs_Start': 'min', 'numTumor': 'sum', 'numNormal': 'sum'}).reset_index()
-print(bins)
+    tumor_total = bins['numTumor'].sum()
+    normal_total = bins['numNormal'].sum()
 
-tumor_total = bins['numTumor'].sum()
-normal_total = bins['numNormal'].sum()
+    bins['normTC'] = bins['numTumor'] / sum(bins['numTumor'])
+    bins['normNC'] = bins['numNormal'] / sum(bins['numNormal'])
+    bins['ratio'] = bins['normTC'].astype('float') / bins['normNC']
+    return bins
 
-bins['normTC'] = bins['numTumor'] / sum(bins['numTumor'])
-bins['normNC'] = bins['numNormal'] / sum(bins['numNormal'])
-bins['ratio'] = bins['normTC'].astype('float') / bins['normNC']
+if __name__ == '__main__':
+    file = sys.argv[1]
 
-fig = plt.figure(figsize=(10,3))
-ax = fig.add_subplot(111)
+    fig = plt.figure(figsize=(10,3))
+    ax = fig.add_subplot(111)
+    bins = get_read_depth_arms(file)
 
-chm_len_cum = [get_abs_pos(i, x) for i,x in enumerate(HG19_CHM_LEN)]
-ctm_cum = [get_abs_pos(i, x) for i,x in enumerate(HG19_CENTROMERE)]
-ctm_cum_end = [get_abs_pos(i, x) for i,x in enumerate(HG19_CENTROMERE_END)]
+    chm_len_cum = [get_abs_pos(i, x) for i,x in enumerate(HG19_CHM_LEN)]
+    ctm_cum = [get_abs_pos(i, x) for i,x in enumerate(HG19_CENTROMERE)]
+    ctm_cum_end = [get_abs_pos(i, x) for i,x in enumerate(HG19_CENTROMERE_END)]
 
-bins[['Abs_Start', 'ratio', 'Arm', 'Chrm']].apply(
-    lambda (x_c,y,a,c): ax.plot(
-        (chm_len_cum[c-1] if a == 'p' else ctm_cum_end[c], ctm_cum[c] if a == 'p' else chm_len_cum[c]),
-        (y, y), linewidth=3, clip_on=False, c='b', solid_capstyle='butt'),
-    axis=1)
+    bins[['Abs_Start', 'ratio', 'Arm', 'Chrm']].apply(
+        lambda (x_c,y,a,c): ax.plot(
+            (chm_len_cum[c-1] if a == 'p' else ctm_cum_end[c], ctm_cum[c] if a == 'p' else chm_len_cum[c]),
+            (y, y), linewidth=3, clip_on=False, c='b', solid_capstyle='butt'),
+        axis=1)
 
-# all in one chromosome x-axis prep package
-ax.set_xticks(chm_len_cum)
-ax.set_xticks([x  - HG19_CHM_LEN[i] // 2 for i, x in enumerate(chm_len_cum[1:], 1)], minor=True)
-ax.set_xticklabels(map(str, range(1, 23)), minor=True)
-ax.set_xticklabels([], minor=False)
-ax.set_xlim(0, chm_len_cum[22])
-ax.xaxis.grid(which='major')
+    # all in one chromosome x-axis prep package
+    ax.set_xticks(chm_len_cum)
+    ax.set_xticks([x  - HG19_CHM_LEN[i] // 2 for i, x in enumerate(chm_len_cum[1:], 1)], minor=True)
+    ax.set_xticklabels(map(str, range(1, 23)), minor=True)
+    ax.set_xticklabels([], minor=False)
+    ax.set_xlim(0, chm_len_cum[22])
+    ax.xaxis.grid(which='major')
 
-ax.set_ylim(0.0, 5.0)
-ax.set_xlabel('chm')
-ax.set_ylabel('rdr')
-ax.set_title(os.path.basename(file).split('.')[0])
-fig.tight_layout()
+    ax.set_ylim(0.0, 5.0)
+    ax.set_xlabel('chm')
+    ax.set_ylabel('rdr')
+    ax.set_title(os.path.basename(file).split('.')[0])
+    fig.tight_layout()
 
-print(bins)
+    print(bins)
 
-fig.savefig(os.path.basename(file).split('.')[0] + "_bin_rd_arms.png")
+    fig.savefig(os.path.basename(file).split('.')[0] + "_bin_rd_arms.png")
