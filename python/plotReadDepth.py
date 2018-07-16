@@ -54,6 +54,7 @@ ax.xaxis.grid(which='major')
 ax.set_ylim(0.0, 5.0)
 ax.set_xlabel('chm')
 ax.set_ylabel('rdr')
+ax.set_title(os.path.basename(file).split('.')[0])
 fig.tight_layout()
 
 print(bins)

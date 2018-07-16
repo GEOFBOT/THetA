@@ -53,6 +53,7 @@ def plot_snp(tumor_snp, normal_snp, interval_file):
 
     ax.set_xlabel('chm')
     ax.set_ylabel('baf')
+    ax.set_title(os.path.basename(tumor_snp).split('.')[0])
     fig.tight_layout()
 
     fig.savefig(os.path.basename(tumor_snp).split('.')[0] + "_snps.png")
