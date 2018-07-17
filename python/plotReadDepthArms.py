@@ -33,7 +33,7 @@ def get_read_depth_arms(file):
     bins = pd.read_table(file)
     bins['Arm'] = bins.apply(lambda r: 'p' if r['Start'] < HG19_CENTROMERE[r['Chrm']] else 'q', axis=1)
 
-    bins['Abs_Start'] = bins[['Chrm', 'Start']].apply(lambda (c,s): s + sum(HG19_CHM_LEN[1:c]), axis=1)
+    bins['Abs_Start'] = bins[['Chrm', 'Start']].apply(lambda x: x[1] + sum(HG19_CHM_LEN[1:x[0]]), axis=1)
     bins = bins.groupby(['Chrm', 'Arm']).agg({'Abs_Start': 'min', 'numTumor': 'sum', 'numNormal': 'sum'}).reset_index()
 
     tumor_total = bins['numTumor'].sum()
